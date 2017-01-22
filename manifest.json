@@ -1,0 +1,31 @@
+{
+  "name": "Reminder",
+  "description": "网页内容变动提醒",
+  "update_url": "http://baidu.com",
+  "version": "1.0",
+  "icons": {
+    "16": "img/icon_16.png",
+    "48": "img/icon_48.png",
+    "128": "img/icon.png"
+  },
+  "background": {
+    "scripts": ["js/jquery-2.1.0.min.js", "js/background.js"],
+    "persistent": false
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "tabs", "http://*/*", "https://*/*", "notifications"
+  ],
+  "browser_action": {
+    "default_title": "Reminder",
+    "default_icon": "img/icon.png",
+    "default_popup": "popup.html"
+  },
+  "manifest_version": 2,
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "css": [],
+    "js": ["js/helper.js"],
+    "run_at": "document_end"
+  }]
+}
