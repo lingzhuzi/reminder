@@ -3,77 +3,67 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Reminder 选项</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/options.css">
 </head>
 <body>
-<div class="body">
-    <h1 class="header">Reminder</h1>
+<div class="container">
+    <h1 class="header">美剧提醒者&nbsp;&nbsp;<small id="version_no"></small></h1>
 
-    <div class='version-info'>
-        <h3>版本：<span id="version_no"></span></h3>
-
-        <div id="update_ctn">
-            <h3>有新版本可以更新！</h3>
-            <label class="version"></label>
-            <a href="https://raw.githubusercontent.com/lingzhuzi/reminder/master/release/reminder.crx">点击下载新版本</a>
-            <p>更新日志：</p>
-            <p class="log"></p>
-            <h4>更新方法：点击上面的链接下载新版，将下载好的文件拖入浏览器的设置页面，在弹出框中点击确定即可完成安装。</h4>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default r-subscribe-group r-margin">
+          <div class="panel-heading">
+            <span>已订阅项目</span>
+          </div>
+          <div class="panel-body">
+            <div class="list-group"></div>
+          </div>
         </div>
+      </div>
+
+      <div class="col-md-6">
+        <div role="form" class="form-inline r-margin">
+          <div class="form-group">
+            <input type="text" name="key_word" class="form-control r-key-word" placeholder="请输入美剧名"/>
+            <button class="btn btn-default r-btn-search">搜索</button>
+          </div>
+        </div>
+
+        <div class="panel panel-default r-margin r-search-result">
+          <div class="panel-heading">
+            <label>搜索结果</label>
+          </div>
+          <div class="panel-body r-search-result-items">
+            <ul class="list-group"></ul>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="content">
+    <template id="r_search_result_item">
+      <li class="list-group-item">
+        <button class="btn btn-default btn-xs pull-right r-btn-subscribe">订阅</button>
+        <span class="r-title"></span>
+        <input type="hidden" class="r-url" />
+      </li>
+    </template>
 
-        <h3>选项</h3>
+    <template id="r_subscribed_item">
+      <div class="list-group-item">
+        <h4>
+          <span></span>
+          <input type="hidden" class="r-item-id" />
+          <input type="hidden" class="r-item-url" />
+          <button class="btn btn-default btn-xs pull-right r-btn-unsubscribe">取消订阅</button>
+        </h4>
+        <ul></ul>
+      </div>
+    </template>
 
-        <div class="row">
-            <label for="name">名称：</label>
-            <input type="text" name="name" id="name">
-            <input type="hidden" name="id" id="id">
-        </div>
 
-        <div class="row">
-            <label for="url">地址：</label>
-            <input type="text" name="url" id="url">
-        </div>
-
-        <div class="row">
-            <label for="css_selector">CSS选择器：</label>
-            <input type="text" name="css_selector" id="css_selector">
-        </div>
-
-        <div class="row">
-            <label for="expect_content">期望链接内容：</label>
-            <input type="text" name="expect_content" id="expect_content">
-        </div>
-
-        <div class="row">
-            <label for="enabled">启用：</label>
-            <input type="checkbox" name="enabled" id="enabled" checked='checked'>
-        </div>
-
-        <div style="margin-top: 20px;margin-bottom: 40px;">
-            <a id="save_btn" href="#" class="btn btn-primary" style="margin-left: 85px;">保存</a>
-        </div>
-
-        <div id="notice_wrap" style="text-align: center;">保存成功</div>
-    </div>
-
-    <div class="index">
-        <h3>Reminder 列表</h3>
-
-        <div class="row">
-            <a class="new" href="#">新增</a>
-        </div>
-
-        <table class="reminders-table">
-            <tr>
-                <th width="200"></th>
-                <th></th>
-            </tr>
-        </table>
-    </div>
 </div>
+<div id="notice_wrap" class="alert alert-info"></div>
 <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
 <script type="text/javascript" src="js/options.js"></script>
 </body>

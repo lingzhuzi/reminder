@@ -1,9 +1,7 @@
 $(function() {
+  var SEARCHING = false;
 
-  var VERSION = 0;
   showVersion();
-  checkUpdate();
-
   showReminders();
   bindEvents();
 
@@ -12,159 +10,159 @@ $(function() {
       message: "getReminderList"
     }, function(response) {
       for (var i = 0; i < response.length; i++) {
-        appendToReminderTable(response[i]);
+        appendToReminderList(response[i]);
       }
     });
   }
 
   function bindEvents() {
-    $('#save_btn').click(function() {
-      saveReminder();
-    });
-
-    $('.new').click(function() {
-      resetForm();
-    });
-
-    $(document).on('click', '.reminders-table .edit', function() {
-      var reminderId = $(this).attr('reminder_id');
-      editReminder(reminderId);
-    });
-
-    $(document).on('click', '.reminders-table tr', function() {
-      var reminderId = $(this).find('.edit').attr('reminder_id');
-      editReminder(reminderId);
-    });
-
-    $(document).on('click', '.reminders-table .delete', function() {
-      var $this = $(this);
-      var reminderId = $this.attr('reminder_id');
-      deleteReminder(reminderId);
-    });
-  }
-
-  function checkUpdate() {
-    $.get("https://raw.githubusercontent.com/lingzhuzi/reminder/master/release/version.json", function(json) {
-      var data = JSON.parse(json);
-      var version = data.version;
-      var log = data.log;
-      if (version > VERSION) {
-        $('#update_ctn').show();
-        $('#update_ctn .version').html("版本：" + version);
-        $('#update_ctn .log').html($(log));
-      } else {
-        $('#update_ctn').remove();
+    $('.r-key-word').keydown(function(e){
+      if (e.keyCode == 13) {
+        var keyWord = $(this).val();
+        doSearch(keyWord);
       }
     });
+
+    $('.r-btn-search').click(function(){
+        var keyWord = $('.r-key-word').val();
+        doSearch(keyWord);
+    });
+
+    $(document).on('click', '.r-btn-subscribe', function() {
+      var title = $(this).siblings('.r-title').text();
+      var url   = $(this).siblings('.r-url').val();
+      saveReminder(title, url);
+    });
+
+    $(document).on('click', '.r-btn-unsubscribe', function() {
+      var $this = $(this);
+      var reminderId = $this.siblings('.r-item-id').val();
+      deleteReminder(reminderId, function(){
+        showNotice("退订成功");
+        $this.parents('.list-group-item').remove();
+      });
+    })
   }
 
   function showVersion() {
     $.get(chrome.extension.getURL('manifest.json'), function(info) {
-      VERSION = parseFloat(info.version);
+      var version = parseFloat(info.version);
       $('#version_no').text(info.version);
     }, 'json');
   }
 
-  function editReminder(reminderId) {
-    chrome.extension.sendMessage({
-      message: "getReminder",
-      reminder_id: reminderId
-    }, function(reminder) {
-      setForm(reminder);
-    });
-  }
-
   function deleteReminder(reminderId, callback) {
-    if (confirm('确定删除？')) {
+    if (confirm('取消订阅？')) {
       chrome.extension.sendMessage({
         message: "deleteReminder",
         reminder_id: reminderId
-      }, function(reminder) {
-        resetForm();
-        $('.reminders-table .delete[reminder_id=' + reminderId + ']').parents('tr').remove();
+      }, function() {
+        callback.call(null);
       });
     }
   }
 
-  function saveReminder() {
-    var reminder = getFormData();
-    var isNewRecord = (reminder.id == '');
+  function saveReminder(title, url) {
+    var reminder = {name: title, url: url};
 
     chrome.extension.sendMessage({
       message: "saveReminder",
       reminder: reminder
     }, function(reminder) {
-      if (isNewRecord) {
-        $('#id').val(reminder.id);
-        appendToReminderTable(reminder);
+      if (reminder) {
+        appendToReminderList(reminder);
+        showNotice("订阅成功");
+      } else {
+        showNotice("已经订阅过该剧");
       }
-
-      $('#notice_wrap').slideDown('fast');
-      window.setTimeout(function() {
-        $('#notice_wrap').slideUp('fase');
-      }, 3000);
     });
   }
 
-  function resetForm() {
-    var $inputs = $('.content :input');
-    for (var i = 0; i < $inputs.length; i++) {
-      var $input = $($inputs[i]);
+  function appendToReminderList(reminder){
+    var template = $('#r_subscribed_item').html();
+    var $item = $(template);
+    $item.find('span').text(reminder.name);
+    $item.find('.r-item-id').val(reminder.id);
+    $item.find('.r-item-url').val(reminder.url);
+    $('.r-subscribe-group .list-group').append($item);
+  }
 
-      if ($input.is('select')) {
-        $input.val(0);
-      } else if ($input.is(':checkbox')) {
-        $input.prop("checked", true);
-      } else {
-        $input.val('');
+  function doSearch(keyWord){
+    if (SEARCHING) {
+      return;
+    }
+    if (keyWord == '') {
+      showNotice('请输入美剧名称');
+      return;
+    }
+    setSearching(true)
+    var url = 'http://cn163.net/?x=0&y=0&s=' + keyWord;
+    $.ajax({
+      url: url,
+      type: 'get',
+      success: function(html){
+        var items = parseSearchResultHtml(html, keyWord);
+        showSearchResult(items);
+        setSearching(false);
+      },
+      error: function(error){
+        showSearchResult([{title: '搜索过程中发生了错误，请稍后重新搜索'}]);
+        setSearching(false);
       }
+    });
+  }
+
+  function showSearchResult(items) {
+    $('.r-search-result-items ul li').remove();
+    var template = $('#r_search_result_item').html();
+    if (items.length == 0){
+      items.push({title: '没有搜索到相关内容'});
+    }
+    $.each(items, function(_, item){
+      var $item = $(template);
+      $item.find('.r-title').text(item.title);
+      $item.find('.r-url').val(item.url);
+      if (!item.url) {
+        $item.find('.r-btn-subscribe').hide();
+      }
+      $('.r-search-result-items ul').append($item);
+    });
+  }
+
+  function parseSearchResultHtml(html, keyWord) {
+    var items = [];
+    var $doc = $(html);
+    $doc.find('.archive_title a').each(function(_i, link){
+      var $link = $(link);
+      var title = $link.text();
+      var url = $link.attr('href');
+      if (title.indexOf(keyWord) > -1){
+        items.push({title: title, url: url});
+      }
+    });
+    return items;
+  }
+
+  function setSearching(searching) {
+    SEARCHING = searching;
+    var btnText = SEARCHING ? '搜索中...' : '搜索';
+    $('.r-btn-search').text(btnText);
+  }
+
+  // 显示并定时隐藏提醒消息
+   function showNotice (notice) {
+    var $notice = $('#notice_wrap');
+    if (notice && notice.length > 0) {
+      $notice.text(notice);
+    }
+    if ($notice.text().length > 0) {
+      $notice.css({
+        left: ($(window).width() - $notice.width()) / 2,
+        top: ($(window).height() - $notice.height()) / 2 * 0.62
+      }).show();
+      window.setTimeout(function() {
+        $notice.hide();
+      }, 3000);
     }
   }
-
-  function setForm(reminder) {
-    for (var name in reminder) {
-      if (name == 'enabled') {
-        $('#enabled').prop('checked', reminder['enabled']);
-      } else {
-        $('#' + name).val(reminder[name]);
-      }
-    }
-  }
-
-  function getFormData() {
-    var reminder = {};
-    var $inputs = $('.content :input');
-    for (var i = 0; i < $inputs.length; i++) {
-      var $input = $($inputs[i]);
-      var name = $input.attr('name');
-      var value = $input.val();
-      if ($input.is(':checkbox')) {
-        value = $input.is(":checked");
-      }
-      reminder[name] = value;
-    }
-    return reminder;
-  }
-
-  function appendToReminderTable(reminder) {
-    var $tr = $('<tr></tr>');
-    var $td1 = $('<td></td>').append(reminder.name);
-    var $td2 = $('<td></td>');
-    var $edit = $('<a class="edit" href="#">编辑</a>').attr('reminder_id', reminder.id);
-    var $del = $('<a class="delete" href="#">删除</a>').attr('reminder_id', reminder.id);
-    $td2.append($edit).append($del);
-    $tr.append($td1).append($td2);
-    $('.reminders-table').append($tr);
-  }
-
-  function saveData(list_name, data) {
-    var strData = JSON.stringify(data);
-    localStorage.setItem(list_name, strData);
-  }
-
-  function getData(name, defaultData) {
-    var strData = localStorage.getItem(name);
-    return strData ? JSON.parse(strData) : defaultData;
-  }
-
 });

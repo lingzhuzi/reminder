@@ -13,8 +13,8 @@
         sendResponse(reminder);
         break;
       case 'saveReminder':
-        saveReminder(request.reminder);
-        sendResponse(request.reminder);
+        var reminder = saveReminder(request.reminder);
+        sendResponse(reminder);
         break;
       case 'deleteReminder':
         deleteReminder(request.reminder_id);
@@ -92,15 +92,28 @@
   }
 
   function saveReminder(reminder) {
-    if (!reminder.id || reminder.id == '') {
-      reminder.id = assignId();
+    if (hasExist(reminder.url)){
+      return null;
     }
+
+    reminder.id = assignId();
     localStorage.setItem('reminder-' + reminder.id, JSON.stringify(reminder));
     return reminder;
   }
 
   function deleteReminder(reminderId) {
     localStorage.removeItem('reminder-' + reminderId);
+  }
+
+  function hasExist(url){
+    var list = getReminderList();
+    for(var i=0;i<list.length;i++){
+      var item = list[i];
+      if(item.url == url){
+        return true;
+      }
+    }
+    return false;
   }
 
   function assignId() {
