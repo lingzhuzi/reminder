@@ -20,3 +20,12 @@ body {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
+.r-btn-pull, .r-btn-unsubscribe {
+  margin-left: 10px;
+}
+
+.r-subscribe-group .list-group-item ul {
+  display: none;
+}
+

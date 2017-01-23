@@ -36,24 +36,27 @@
     var reminderList = getReminderList();
     for (var i = 0; i < reminderList.length; i++) {
       var reminder = reminderList[i];
-      if (reminder.enabled) {
-        checkRelease(reminderList[i]);
-      }
+      checkRelease(reminderList[i]);
     }
   }
 
   function checkRelease(reminder) {
     $.get(reminder.url, function(doc) {
       var $doc = $(doc);
-      var $links = $doc.find(reminder.css_selector);
+      var $links = $doc.find('#entry a');
+      var items = [];
       for (var i = 0; i < $links.length; i++) {
         var $link = $($links[i]);
-        if ($link.text() == reminder.expect_content) {
-          showNotify(reminder.name + reminder.expect_content + "更新啦！");
-          window.open(reminder.url);
-          break;
+        if ($link.text().match(/第\d+集/)) {
+          items.push({title: $link.text(), url: $link.attr('href')});
         }
       }
+      var oldItems = reminder.items ? reminder.items : [];
+      if (oldItems.length != items.length) {
+        showNotify(reminder.name + "更新啦！\n" + items[items.length-1].title);
+      }
+      reminder.items = items;
+      saveReminder(reminder);
     });
   }
 
@@ -92,11 +95,7 @@
   }
 
   function saveReminder(reminder) {
-    if (hasExist(reminder.url)){
-      return null;
-    }
-
-    reminder.id = assignId();
+    reminder.id = reminder.id ? reminder.id : assignId();
     localStorage.setItem('reminder-' + reminder.id, JSON.stringify(reminder));
     return reminder;
   }

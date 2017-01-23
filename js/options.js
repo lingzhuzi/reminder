@@ -28,6 +28,17 @@ $(function() {
         doSearch(keyWord);
     });
 
+    $(document).on('click', '.r-btn-pull', function() {
+      var $ul = $(this).parents('.list-group-item').find('ul');
+      if ($ul.is(':visible')) {
+        $ul.slideUp();
+        $(this).text('查看剧集');
+      } else {
+        $ul.slideDown();
+        $(this).text('收起剧集');
+      }
+    });
+
     $(document).on('click', '.r-btn-subscribe', function() {
       var title = $(this).siblings('.r-title').text();
       var url   = $(this).siblings('.r-url').val();
@@ -84,6 +95,13 @@ $(function() {
     $item.find('span').text(reminder.name);
     $item.find('.r-item-id').val(reminder.id);
     $item.find('.r-item-url').val(reminder.url);
+    var $ul = $item.find('ul');
+    var items = reminder.items ? reminder.items : [];
+    $.each(items, function(_, item){
+      var $a = $('<a></a>').text(item.title).attr('href', item.url);
+      var $li = $('<li></li>').append($a);
+      $ul.append($li);
+    });
     $('.r-subscribe-group .list-group').append($item);
   }
 
