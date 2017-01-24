@@ -1,5 +1,5 @@
 {
-  "name": "Reminder",
+  "name": "美剧提醒者",
   "description": "网页内容变动提醒",
   "update_url": "http://baidu.com",
   "version": "1.0",
@@ -17,7 +17,7 @@
     "tabs", "http://*/*", "https://*/*", "notifications"
   ],
   "browser_action": {
-    "default_title": "Reminder",
+    "default_title": "美剧提醒者",
     "default_icon": "img/icon.png",
     "default_popup": "popup.html"
   },
