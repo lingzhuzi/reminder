@@ -28,6 +28,11 @@
           checkAll(request.time);
         }
         break;
+      case 'checkReleaseOfReminder':
+        checkRelease(request.reminder, false);
+        var reminder = getReminder(request.reminder.id);
+        sendResponse(reminder);
+        break;
     }
   });
 
@@ -40,23 +45,28 @@
     }
   }
 
-  function checkRelease(reminder) {
-    $.get(reminder.url, function(doc) {
-      var $doc = $(doc);
-      var $links = $doc.find('#entry a');
-      var items = [];
-      for (var i = 0; i < $links.length; i++) {
-        var $link = $($links[i]);
-        if ($link.text().match(/第\d+集/)) {
-          items.push({title: $link.text(), url: $link.attr('href')});
+  function checkRelease(reminder, async) {
+    $.ajax({
+      url: reminder.url,
+      type: 'get',
+      async: async,
+      success: function(doc) {
+        var $doc = $(doc);
+        var $links = $doc.find('#entry a');
+        var items = [];
+        for (var i = 0; i < $links.length; i++) {
+          var $link = $($links[i]);
+          if ($link.text().match(/第\d+集/)) {
+            items.push({title: $link.text(), url: $link.attr('href')});
+          }
         }
+        var oldItems = reminder.items ? reminder.items : [];
+        if (async && oldItems.length != items.length) {
+          showNotify(reminder.name + "更新啦！\n" + items[items.length-1].title);
+        }
+        reminder.items = items;
+        saveReminder(reminder);
       }
-      var oldItems = reminder.items ? reminder.items : [];
-      if (oldItems.length != items.length) {
-        showNotify(reminder.name + "更新啦！\n" + items[items.length-1].title);
-      }
-      reminder.items = items;
-      saveReminder(reminder);
     });
   }
 

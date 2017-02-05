@@ -2,7 +2,7 @@
   "name": "美剧提醒者",
   "description": "网页内容变动提醒",
   "update_url": "http://baidu.com",
-  "version": "1.0",
+  "version": "1.1",
   "icons": {
     "16": "img/icon_16.png",
     "48": "img/icon_48.png",

@@ -40,7 +40,7 @@ $(function() {
     });
 
     $(document).on('click', '.r-btn-subscribe', function() {
-      var title = $(this).siblings('.r-title').text();
+      var title = $(this).siblings('.r-title').text().split('/')[0];
       var url   = $(this).siblings('.r-url').val();
       saveReminder(title, url);
     });
@@ -82,10 +82,35 @@ $(function() {
     }, function(reminder) {
       if (reminder) {
         appendToReminderList(reminder);
+        checkAndShowTvItems(reminder);
         showNotice("订阅成功");
       } else {
         showNotice("已经订阅过该剧");
       }
+    });
+  }
+
+  function checkAndShowTvItems(reminder) {
+    var $ul;
+    $('.r-item-id').each(function(_, idObj){
+      if ($(idObj).val() == reminder.id){
+        $ul = $(idObj).parents('.list-group-item').find('ul');
+      }
+    });
+
+    $ul.append('<li>正在检查更新...</li>');
+
+    chrome.extension.sendMessage({
+      message: "checkReleaseOfReminder",
+      reminder: reminder
+    }, function(reminder){
+      var items = reminder.items ? reminder.items : [];
+      $ul.find('li').remove();
+      $.each(items, function(_, item){
+        var $a = $('<a></a>').text(item.title).attr('href', item.url);
+        var $li = $('<li></li>').append($a);
+        $ul.append($li);
+      });
     });
   }
 
@@ -118,6 +143,7 @@ $(function() {
     $.ajax({
       url: url,
       type: 'get',
+      timeout: 10*1000,
       success: function(html){
         var items = parseSearchResultHtml(html, keyWord);
         showSearchResult(items);
