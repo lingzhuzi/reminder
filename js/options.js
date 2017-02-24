@@ -106,11 +106,14 @@ $(function() {
     }, function(reminder){
       var items = reminder.items ? reminder.items : [];
       $ul.find('li').remove();
+      var liArr = [];
       $.each(items, function(_, item){
         var $a = $('<a></a>').text(item.title).attr('href', item.url);
-        var $li = $('<li></li>').append($a);
-        $ul.append($li);
+        var $span = $('<span></span>').text(item.time + "检查更新");
+        var $li = $('<li></li>').append($a).append($span);
+        liArr.push($li);
       });
+      $ul.append(liArr);
     });
   }
 
@@ -121,12 +124,15 @@ $(function() {
     $item.find('.r-item-id').val(reminder.id);
     $item.find('.r-item-url').val(reminder.url);
     var $ul = $item.find('ul');
+    var arr = [];
     var items = reminder.items ? reminder.items : [];
     $.each(items, function(_, item){
       var $a = $('<a></a>').text(item.title).attr('href', item.url);
-      var $li = $('<li></li>').append($a);
-      $ul.append($li);
+      var $span = $('<span></span>').text(item.time + "检查更新");
+      var $li = $('<li></li>').append($a).append($span);
+      arr.push($li);
     });
+    $ul.append(arr);
     $('.r-subscribe-group .list-group').append($item);
   }
 

@@ -29,3 +29,7 @@ body {
   display: none;
 }
 
+.list-group-item ul li span {
+  margin-left: 10px;
+  color: #ddd;
+}
