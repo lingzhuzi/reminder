@@ -29,6 +29,15 @@ body {
   display: none;
 }
 
+.list-group-item ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.list-group-item li {
+  padding: 2px 0;
+}
+
 .list-group-item ul li span {
   margin-left: 10px;
   color: #ddd;

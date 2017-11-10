@@ -52,20 +52,22 @@
       async: async,
       success: function(doc) {
         var $doc = $(doc);
-        var $links = $doc.find('#entry a');
         var items = [];
-        for (var i = 0; i < $links.length; i++) {
-          var $link = $($links[i]);
-          if ($link.text().match(/第\d+集/)) {
-            items.push({title: $link.text(), url: $link.attr('href'), time: formatDate(new Date()) });
+        $doc.find('.download-list ul li').each(function(_, li) {
+          var text = $(li).text();
+          var url = $(li).find('a').attr('href');
+          if (text.match(/第\d+集/)) {
+            items.push({title: text, url: url, time: formatDate(new Date()) });
           }
-        }
+        })
+
         var oldItems = reminder.items ? reminder.items : [];
         if (async && oldItems.length != items.length) {
           showNotify(reminder.name + "更新啦！\n" + items[items.length-1].title);
         }
-        var newItems = items.slice(oldItems.length, items.length);
-        reminder.items = oldItems.concat(newItems);
+
+        var newItems = items.slice(0, items.length - oldItems.length);
+        reminder.items = newItems.concat(oldItems);
         saveReminder(reminder);
       }
     });

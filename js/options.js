@@ -145,7 +145,7 @@ $(function() {
       return;
     }
     setSearching(true)
-    var url = 'http://cn163.net/?x=0&y=0&s=' + keyWord;
+    var url = 'http://www.chapaofan.com/search/' + keyWord;
     $.ajax({
       url: url,
       type: 'get',
@@ -182,8 +182,8 @@ $(function() {
   function parseSearchResultHtml(html, keyWord) {
     var items = [];
     var $doc = $(html);
-    $doc.find('.archive_title a').each(function(_i, link){
-      var $link = $(link);
+    $doc.find('.content-list .list .item').each(function(_i, item){
+      var $link = $(item).find('a:first');
       var title = $link.text();
       var url = $link.attr('href');
       if (title.indexOf(keyWord) > -1){
