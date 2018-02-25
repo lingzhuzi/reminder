@@ -14,11 +14,16 @@ body {
   padding-left: 55px;
   height: 48px;
   line-height: 48px;
+  margin-bottom: 20px;
 }
 
 .r-margin {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.r-search-result {
+  display: none;
 }
 
 .r-btn-pull, .r-btn-unsubscribe {
@@ -41,4 +46,6 @@ body {
 .list-group-item ul li span {
   margin-left: 10px;
   color: #ddd;
+  float: right!important;
+  margin-right: 10px;
 }

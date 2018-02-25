@@ -26,6 +26,7 @@ $(function() {
     $('.r-btn-search').click(function(){
         var keyWord = $('.r-key-word').val();
         doSearch(keyWord);
+        $('.r-search-result').show();
     });
 
     $(document).on('click', '.r-btn-pull', function() {
