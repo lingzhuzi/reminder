@@ -43,7 +43,6 @@
   })
 
   function checkAll() {
-    console.log('checkRelease');
     var reminderList = getReminderList();
     for (var i = 0; i < reminderList.length; i++) {
       var reminder = reminderList[i];
