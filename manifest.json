@@ -9,7 +9,7 @@
     "128": "img/icon.png"
   },
   "background": {
-    "scripts": ["js/jquery-2.1.0.min.js", "js/background.js"],
+    "scripts": ["js/jquery-2.1.0.min.js", "js/engines.js", "js/background.js"],
     "persistent": false
   },
   "options_page": "options.html",
@@ -21,11 +21,5 @@
     "default_icon": "img/icon.png",
     "default_popup": "popup.html"
   },
-  "manifest_version": 2,
-  "content_scripts": [{
-    "matches": ["http://*/*", "https://*/*"],
-    "css": [],
-    "js": ["js/helper.js"],
-    "run_at": "document_end"
-  }]
+  "manifest_version": 2
 }

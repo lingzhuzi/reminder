@@ -5,6 +5,22 @@ $(function() {
   showReminders();
   bindEvents();
 
+  var runtimeConnection = chrome.runtime.connect({name: 'reminder'});
+  runtimeConnection.onMessage.addListener(function(msg) {
+    if (msg.name == 'search') {
+      showSearchResult(msg.items);
+      if (msg.finished) {
+        setSearching(false);
+      }
+    } else if (msg.name = "checkReleaseOfReminder") {
+      var reminder = msg.reminder;
+      var items = reminder.items ? reminder.items : [];
+      var $ul = $('.list-group-item[data-reminder_id=' + reminder.id + '] ul');
+      $ul.find('li').remove();
+      setReminderArchives($ul, items);
+    }
+  })
+
   function showReminders() {
     chrome.extension.sendMessage({
       message: "getReminderList"
@@ -26,7 +42,6 @@ $(function() {
     $('.r-btn-search').click(function(){
         var keyWord = $('.r-key-word').val();
         doSearch(keyWord);
-        $('.r-search-result').show();
     });
 
     $(document).on('click', '.r-btn-pull', function() {
@@ -44,6 +59,7 @@ $(function() {
       var title = $(this).siblings('.r-title').text().split('/')[0];
       var url   = $(this).siblings('.r-url').val();
       saveReminder(title, url);
+      $(this).text('已订阅').attr('disabled', 'disabled');
     });
 
     $(document).on('click', '.r-btn-unsubscribe', function() {
@@ -92,106 +108,70 @@ $(function() {
   }
 
   function checkAndShowTvItems(reminder) {
-    var $ul;
-    $('.r-item-id').each(function(_, idObj){
-      if ($(idObj).val() == reminder.id){
-        $ul = $(idObj).parents('.list-group-item').find('ul');
-      }
-    });
-
+    var $ul = $('.list-group-item[data-reminder_id=' + reminder.id + '] ul');
     $ul.append('<li>正在检查更新...</li>');
 
-    chrome.extension.sendMessage({
-      message: "checkReleaseOfReminder",
-      reminder: reminder
-    }, function(reminder){
-      var items = reminder.items ? reminder.items : [];
-      $ul.find('li').remove();
-      var liArr = [];
-      $.each(items, function(_, item){
-        var $a = $('<a></a>').text(item.title).attr('href', item.url);
-        var $span = $('<span></span>').text(item.time + "检查更新");
-        var $li = $('<li></li>').append($a).append($span);
-        liArr.push($li);
-      });
-      $ul.append(liArr);
-    });
+    runtimeConnection.postMessage({name: 'checkReleaseOfReminder', reminder: reminder});
   }
 
   function appendToReminderList(reminder){
     var template = $('#r_subscribed_item').html();
     var $item = $(template);
+    $item.attr('data-reminder_id', reminder.id);
     $item.find('span').text(reminder.name);
     $item.find('.r-item-id').val(reminder.id);
     $item.find('.r-item-url').val(reminder.url);
     var $ul = $item.find('ul');
-    var arr = [];
     var items = reminder.items ? reminder.items : [];
-    $.each(items, function(_, item){
-      var $a = $('<a></a>').text(item.title).attr('href', item.url);
-      var $span = $('<span></span>').text(item.time + "检查更新");
-      var $li = $('<li></li>').append($a).append($span);
-      arr.push($li);
-    });
-    $ul.append(arr);
+    setReminderArchives($ul, items);
     $('.r-subscribe-group .list-group').append($item);
   }
 
+  function setReminderArchives($ul, archives) {
+    var arr = [];
+    $.each(archives, function(_, item){
+      var $li = $('<li></li>');
+      var $span = $('<span></span>').text(item.time + "检查更新");
+      for(var i in item.links) {
+        var link = item.links[i];
+        var $a = $('<a></a>').text(link.title).attr('href', link.url);
+        if (i > 0) {
+          $li.append(' | ');
+        }
+        $li.append($a);
+      }
+      $li.append($span);
+      arr.push($li);
+    });
+    $ul.append(arr);
+  }
+
   function doSearch(keyWord){
-    if (SEARCHING) {
-      return;
-    }
     if (keyWord == '') {
       showNotice('请输入美剧名称');
       return;
     }
-    setSearching(true)
-    var url = 'http://www.chapaofan.com/search/' + keyWord;
-    $.ajax({
-      url: url,
-      type: 'get',
-      timeout: 10*1000,
-      success: function(html){
-        var items = parseSearchResultHtml(html, keyWord);
-        showSearchResult(items);
-        setSearching(false);
-      },
-      error: function(error){
-        showSearchResult([{title: '搜索过程中发生了错误，请稍后重新搜索'}]);
-        setSearching(false);
-      }
-    });
+    if (SEARCHING) {
+      return;
+    }
+    $('.r-search-result').show();
+    setSearching(true);
+    $('.r-search-result-items ul li').remove();
+    runtimeConnection.postMessage({name: 'search', keyWord: keyWord});
   }
 
   function showSearchResult(items) {
-    $('.r-search-result-items ul li').remove();
     var template = $('#r_search_result_item').html();
-    if (items.length == 0){
-      items.push({title: '没有搜索到相关内容'});
-    }
+    
     $.each(items, function(_, item){
       var $item = $(template);
-      $item.find('.r-title').text(item.title);
+      $item.find('.r-title').text('[' + item.name + '] ' + item.title);
       $item.find('.r-url').val(item.url);
       if (!item.url) {
         $item.find('.r-btn-subscribe').hide();
       }
       $('.r-search-result-items ul').append($item);
     });
-  }
-
-  function parseSearchResultHtml(html, keyWord) {
-    var items = [];
-    var $doc = $(html);
-    $doc.find('.content-list .list .item').each(function(_i, item){
-      var $link = $(item).find('a:first');
-      var title = $link.text();
-      var url = $link.attr('href');
-      if (title.indexOf(keyWord) > -1){
-        items.push({title: title, url: url});
-      }
-    });
-    return items;
   }
 
   function setSearching(searching) {
