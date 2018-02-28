@@ -1,8 +1,6 @@
 (function() {
 
-  setInterval(function() {
-    checkAll();
-  }, 60 * 1000);
+  var prevTime = 0;
 
   chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
     switch (request.message) {
@@ -24,6 +22,12 @@
         break;
       case 'openOptions':
         chrome.extension.getBackgroundPage().open('options.html');
+        break;
+        case 'checkRelease':
+        if (request.time - prevTime > 10 * 60 * 1000) {
+          prevTime = request.time;
+          checkAll();
+        }
         break;
     }
   });
@@ -61,7 +65,7 @@
     engine.checkRelease(reminder, function(items) {
       var oldItems = reminder.items ? reminder.items : [];
       if (!callback && oldItems.length != items.length) {
-        showNotify(reminder.name + "更新啦！\n" + items[items.length-1].title);
+        showNotify(reminder.name + "更新啦！\n" + items[items.length-1].text);
       }
 
       var newItems = items.slice(0, items.length - oldItems.length);
