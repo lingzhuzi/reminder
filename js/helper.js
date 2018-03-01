@@ -4,5 +4,5 @@
       message: "checkRelease",
       time: new Date().getTime(),
     });
-  }, 6 * 1000)
+  }, 10 * 60 * 1000);
 })();
