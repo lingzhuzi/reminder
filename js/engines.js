@@ -1,26 +1,4 @@
 (function() {
-  function formatDate(date) {
-    var dateStr = date.getFullYear() + '-';
-    dateStr += formatInteger(date.getMonth() + 1, 2) + '-';
-    dateStr += formatInteger(date.getDate(), 2) + ' ';
-    dateStr += formatInteger(date.getHours(), 2) + ':';
-    dateStr += formatInteger(date.getMinutes(), 2) + ':';
-    dateStr += formatInteger(date.getSeconds(), 2);
-    return dateStr;
-  }
-
-  function formatInteger(value, length) {
-    var zeroStr = '';
-    var str = value.toString();
-    if (str.length < length) {
-      var zeroNum = length - str.length;
-      for(var i=0;i<zeroNum;i++){
-        zeroStr += '0';
-      }
-    }
-    return zeroStr + str;
-  }
-
   var Engine = {
     name: '',
     searchUrl: '',
@@ -100,7 +78,7 @@
       var text = $(li).text().trim();
       var url = $(li).find('a').attr('href');
       if (text.match(/第\d+集/)) {
-        item = {text: text, links: [{title: text, url: url}], time: formatDate(new Date()) };
+        item = {text: text, links: [{title: text, url: url}], time: Common.formatDate(new Date()) };
       }
       return item;
     }
@@ -114,7 +92,7 @@
     parseArchiveItem: function(li) {
       var text = $(li).find('a:first').text().trim();
       if (text.match(/S\d+E\d+/) && text.match(/字幕/)) {
-        var item = {text: text, time: formatDate(new Date()), links: []};
+        var item = {text: text, time: Common.formatDate(new Date()), links: []};
         $(li).find('a').each(function(_, link) {
           var $link = $(link);
           item.links.push({title: $link.text(), url: $link.attr('href')});
@@ -127,5 +105,17 @@
       return items.reverse();
     }
   })
+
+  window.ENABLED_ENGINES = [PaoFanEngine, Msj1Engine];
+
+  window.matchEngine = function(name) {
+    var engine = null;
+    $.each(ENABLED_ENGINES, function(_, en) {
+      if (en.match(name)) {
+        engine = en;
+      }
+    });
+    return engine;
+  }
 
 })();

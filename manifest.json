@@ -9,7 +9,7 @@
     "128": "img/icon.png"
   },
   "background": {
-    "scripts": ["js/jquery-2.1.0.min.js", "js/engines.js", "js/background.js"],
+    "scripts": ["js/jquery-2.1.0.min.js", "js/engines.js", "js/common.js", "js/background.js"],
     "persistent": false
   },
   "options_page": "options.html",

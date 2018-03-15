@@ -55,17 +55,11 @@
   }
 
   function checkRelease(reminder, callback) {
-    var engines = [PaoFanEngine, Msj1Engine];
-    var engine = null;
-    $.each(engines, function(_, en) {
-      if (en.match(reminder.name)) {
-        engine = en;
-      }
-    });
+    var engine = matchEngine(reminder.name);
     engine.checkRelease(reminder, function(items) {
       var oldItems = reminder.items ? reminder.items : [];
       if (!callback && oldItems.length != items.length) {
-        showNotify(reminder.name + "更新啦！\n" + items[items.length-1].text);
+        showNotify(reminder.name + "更新啦！\n" + items[0].text);
       }
 
       var newItems = items.slice(0, items.length - oldItems.length);
@@ -79,7 +73,7 @@
 
   function search(conn, request) {
     var keyWord = request.keyWord;
-    var engines = [PaoFanEngine, Msj1Engine];
+    var engines = ENABLED_ENGINES;
     var responseTimes = 0;
     $.each(engines, function(_, engine) {
       engine.search(keyWord, function(items) {
