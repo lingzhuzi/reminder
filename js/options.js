@@ -121,6 +121,7 @@ $(function() {
     $item.find('span').text(reminder.name);
     $item.find('.r-item-id').val(reminder.id);
     $item.find('.r-item-url').val(reminder.url);
+    $item.find('.r-btn-origin').attr('href', reminder.url);
     var $ul = $item.find('ul');
     var items = reminder.items ? reminder.items : [];
     setReminderArchives($ul, items);
@@ -162,7 +163,7 @@ $(function() {
 
   function showSearchResult(items) {
     var template = $('#r_search_result_item').html();
-    
+
     $.each(items, function(_, item){
       var $item = $(template);
       $item.find('.r-title').text('[' + item.name + '] ' + item.title);
