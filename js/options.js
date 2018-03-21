@@ -44,7 +44,7 @@ $(function() {
         doSearch(keyWord);
     });
 
-    $(document).on('click', '.r-btn-pull', function() {
+    $(document).on('click', '.r-btn-show', function() {
       var $ul = $(this).parents('.list-group-item').find('ul');
       if ($ul.is(':visible')) {
         $ul.slideUp();
