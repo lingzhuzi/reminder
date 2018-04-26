@@ -62,8 +62,15 @@
         showNotify(reminder.name + "更新啦！\n" + items[0].text);
       }
 
-      var newItems = items.slice(0, items.length - oldItems.length);
-      reminder.items = newItems.concat(oldItems);
+      // 总是使用最新的链接，但检查更新的时间用原来的
+      var offset = items.length - oldItems.length;
+      $.each(items, function(i, item) {
+        if (i - offset >= 0) {
+          var oldItem = oldItems[i - offset];
+          item.time = oldItem.time;
+        }
+      });
+      reminder.items = items;
       saveReminder(reminder);
       if (callback) {
         callback.call(null);
